@@ -47,7 +47,7 @@ bootstrap_gen<-function(n,d,cp_indx,Sigma1,Sigma2,family,para){
 # nBoot: a number represents the number of sampling
 # b: bandwidth
 # ncores: cpu number
-dev_Sig_at_t<-function(it,X_star,e,b){
+dev_Sig_at_t_with_e<-function(it,X_star,e,b){
   n=dim(X_star)[1]
   d=dim(X_star)[2]
   hnb=round((b*n)/2)#half bandwidth
@@ -74,15 +74,38 @@ bootstrap_fit<-function(X,nBoot,b,ncores){
   },simplify="array")  
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
-  tmp<-foreach(step=1:nBoot, .combine='cbind',.multicombine=TRUE,.export=c('dev_Sig_at_t'))%:%
-    foreach(it=(hnb+1):(n-hnb), .combine='c',.export=c('dev_Sig_at_t'))%dopar%{
+  tmp<-foreach(step=1:nBoot, .combine='cbind',.multicombine=TRUE,.export=c('dev_Sig_at_t_with_e'))%:%
+    foreach(it=(hnb+1):(n-hnb), .combine='c',.export=c('dev_Sig_at_t_with_e'))%dopar%{
       X_star=X_bootstrap[,,step]
       e=nBoot_e[,step]
-      result=dev_Sig_at_t(it,X_star,e,b)
+      result=dev_Sig_at_t_with_e(it,X_star,e,b)
     }
   stopCluster(cl)
   W_all=as.vector(apply(tmp,MARGIN=2,max))
   return(W_all)
+}
+
+dev_Sig_at_t_without_e<-function(it,X,b){
+  n=dim(X)[1]
+  d=dim(X)[2]
+  hnb=round((b*n)/2)#half bandwidth
+  s1=crossprod(X[((it-hnb):it),],X[((it-hnb):it),])
+  s2=crossprod(X[((it+1):(it+hnb)),],X[((it+1):(it+hnb)),])
+  dev=max(abs(s1-s2))/hnb
+  return(dev)
+}
+
+T_statistic<-function(X,b,ncores){
+  n=dim(X)[1]
+  d=dim(X)[2]
+  hnb=round((b*n)/2)#half bandwidth
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
+  tmp<-foreach(it=(hnb+1):(n-hnb), .combine='c',.export=c('dev_Sig_at_t_without_e'))%dopar%{
+    result=dev_Sig_at_t_without_e(it,X,b)
+  }
+  stopCluster(cl)
+  return(max(tmp))
 }
 
 
