@@ -17,7 +17,7 @@ source("change_point_bootstrap_lib.R")
 ncores=8
 n=100
 d=40
-nBoot=100
+nBoot=300
 nSim=100
 
 #bandwidth fitting
@@ -40,7 +40,7 @@ for (nn in 1:nSim){
   print(nn)
   set.seed(nn)
   #data generation
-  X=bootstrap_gen(n,d,cp_indx,family='mix',para=para)
+  X=bootstrap_gen(n,d,cp_indx,family='normal',para=para)
   #bootstrap
   W=bootstrap_fit(X,nBoot,b,ncores)
   W_sort=sort(W)

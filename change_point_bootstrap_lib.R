@@ -29,8 +29,8 @@ bootstrap_gen<-function(n,d,cp_indx,Sigma1,Sigma2,family,para){
   }
   # mixed distribution
   if (family=='mix'){
-    X1=rCN(n = cp_indx, mu = rep(0,d), Sigma1, alpha = 0.8, eta = 2.51)
-    X2=rCN(n = n-cp_indx, mu = rep(0,d), Sigma2, alpha = 0.8, eta = 2.51)
+    X1=rCN(n = cp_indx, mu = rep(0,d), Sigma1, alpha = 0.99, eta = 1.01)
+    X2=rCN(n = n-cp_indx, mu = rep(0,d), Sigma2, alpha = 0.99, eta = 1.01)
   }
   #data matrix
   X=rbind(X1,X2)
