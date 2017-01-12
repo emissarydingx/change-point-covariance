@@ -18,12 +18,12 @@ source("change_point_bootstrap_lib.R")
 ncores=8
 n=100
 d=40
-nBoot=10
+nBoot=300
 nSim=100
 
 #bandwidth fitting
-b=0.8*n^(-1/5)
-# b=0.1
+# b=0.8*n^(-1/5)
+b=0.1
 
 Sigma1=diag(rep(1,d))
 Sigma2=diag(rep(1,d))
@@ -37,6 +37,8 @@ para=list(Sigma1=Sigma1,Sigma2=Sigma2,
 alpha_hat_arr=array(0,c(nSim,25))
 alpha=seq(0.01,0.99,length.out=25)#range of probability
 
+cl <- makeCluster(ncores)
+registerDoParallel(cl)
 for (nn in 1:nSim){
   print(nn)
   set.seed(nn)
@@ -58,6 +60,7 @@ for (nn in 1:nSim){
     T_n<=sq[x]
   })
 }
+stopCluster(cl)
 # alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
 alpha_hat=colMeans(alpha_hat_arr)
 
