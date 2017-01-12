@@ -4,6 +4,7 @@ library(doParallel)
 library(foreach)
 library(mvtnorm)
 library(ContaminatedMixt)
+library(foreach)
 # library(distrEllipse)
 
 # setwd("C:\\Users\\Xin\\OneDrive\\research\\change point covariance\\code\\simulation")
@@ -17,7 +18,7 @@ source("change_point_bootstrap_lib.R")
 ncores=8
 n=100
 d=40
-nBoot=300
+nBoot=10
 nSim=100
 
 #bandwidth fitting
@@ -64,8 +65,6 @@ plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b')
 abline(a=0,b=1)
 
 # save.image("change_point_detection.Rdata")
-
-
 
 
 
