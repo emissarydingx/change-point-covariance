@@ -18,10 +18,11 @@ ncores=8
 n=100
 d=40
 nBoot=100
+nSim=100
 
 #bandwidth fitting
-# b=0.8*n^(-1/5)
-b=0.1
+b=0.8*n^(-1/5)
+# b=0.1
 
 Sigma1=diag(rep(1,d))
 Sigma2=diag(rep(1,d))
@@ -31,7 +32,7 @@ cp_indx=50#the index of the change point
 #data generation
 para=list(Sigma1=Sigma1,Sigma2=Sigma2,
           df=10)
-X=bootstrap_gen(n,d,cp_indx,family='t',para=para)
+X=bootstrap_gen(n,d,cp_indx,family='mix',para=para)
 
 #bootstrap
 W=bootstrap_fit(X,nBoot,b,ncores)
