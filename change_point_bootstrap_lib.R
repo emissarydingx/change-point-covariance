@@ -81,6 +81,14 @@ bootstrap_fit<-function(X,nBoot,b,ncores){
       result=dev_Sig_at_t_with_e(it,X_star,e,b)
     }
   # stopCluster(cl)
+  # tmp=sapply(1:nBoot,FUN=function(step){
+  #   sapply((hnb+1):(n-hnb),FUN=function(it){
+  #     X_star=X_bootstrap[,,step]
+  #     e=nBoot_e[,step]
+  #     result=dev_Sig_at_t_with_e(it,X_star,e,b)
+  #   })
+  # },simplify="array")
+  
   W_all=as.vector(apply(tmp,MARGIN=2,max))
   return(W_all)
 }

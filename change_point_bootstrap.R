@@ -18,7 +18,7 @@ source("change_point_bootstrap_lib.R")
 ncores=8
 n=100
 d=40
-nBoot=300
+nBoot=200
 nSim=100
 
 #bandwidth fitting
@@ -43,7 +43,7 @@ for (nn in 1:nSim){
   print(nn)
   set.seed(nn)
   #data generation
-  X=bootstrap_gen(n,d,cp_indx,family='normal',para=para)
+  X=bootstrap_gen(n,d,cp_indx,family='t',para=para)
   #bootstrap
   W=bootstrap_fit(X,nBoot,b,ncores)
   W_sort=sort(W)
@@ -55,6 +55,7 @@ for (nn in 1:nSim){
   sq=sapply(1:length(alpha),FUN=function(x){
     W_sort[sum(alpha[x]>prob_W_interval)]
   })
+  # sq=quantile(W,probs=alpha)
   T_n=T_statistic(X,b,ncores)
   alpha_hat_arr[nn,]=sapply(1:length(sq),FUN=function(x){
     T_n<=sq[x]
@@ -64,10 +65,10 @@ stopCluster(cl)
 # alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
 alpha_hat=colMeans(alpha_hat_arr)
 
-plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b')
+plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b',xlim=c(0, 1),ylim=c(0,1))
 abline(a=0,b=1)
 
-# save.image("change_point_detection.Rdata")
+save.image("change_point_detection.Rdata")
 
 
 
