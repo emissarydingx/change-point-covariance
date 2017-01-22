@@ -15,7 +15,7 @@ source("change_point_bootstrap_lib.R")
 # Simulation setup
 # -------------------------------------------
 ncores=8
-n=100
+n=500
 d=40
 nBoot=200
 nSim=100
@@ -25,7 +25,7 @@ nSim=100
 b=0.1
 
 Sigma1=diag(rep(1,d))
-Sigma2=diag(rep(10,d))
+Sigma2=diag(rep(1,d))
 
 
 cp_indx=50#the index of the change point
@@ -36,8 +36,6 @@ para=list(Sigma1=Sigma1,Sigma2=Sigma2,
 
 alpha_hat_arr=array(0,c(nSim,25))
 alpha=seq(0.01,0.99,length.out=25)#range of probability
-
-
 
 #data generation
 X_all=array(0,c(n,d,nSim))
