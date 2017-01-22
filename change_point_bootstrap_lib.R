@@ -50,11 +50,12 @@ dev_Sig_at_t_with_e<-function(it,X_star,e,b){
   hnb=round((b*n)/2)#half bandwidth
   s1=crossprod(X_star[((it-hnb):it),]*drop(e[((it-hnb):it)]),X_star[((it-hnb):it),])
   s2=crossprod(X_star[((it+1):(it+hnb)),]*drop(e[((it+1):(it+hnb))]),X_star[((it+1):(it+hnb)),])
-  dev=max(abs(s1-s2))/hnb
+  # dev=max(abs(s1-s2))/hnb
+  dev=norm(s1-s2,type='I')/hnb
   return(dev)
 }
 
-bootstrap_fit<-function(X,nBoot,b,ncores){
+bootstrap_fit<-function(X,nBoot,b){
   n=dim(X)[1]
   d=dim(X)[2]
   hnb=round((b*n)/2)#half bandwidth
@@ -87,11 +88,12 @@ dev_Sig_at_t_without_e<-function(it,X,b){
   hnb=round((b*n)/2)#half bandwidth
   s1=crossprod(X[((it-hnb):it),],X[((it-hnb):it),])
   s2=crossprod(X[((it+1):(it+hnb)),],X[((it+1):(it+hnb)),])
-  dev=max(abs(s1-s2))/hnb
+  # dev=max(abs(s1-s2))/hnb
+  dev=norm(s1-s2,type='I')/hnb
   return(dev)
 }
 
-T_statistic<-function(X,b,ncores){
+T_statistic<-function(X,b){
   n=dim(X)[1]
   d=dim(X)[2]
   hnb=round((b*n)/2)#half bandwidth
