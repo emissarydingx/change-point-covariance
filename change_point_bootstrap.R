@@ -4,7 +4,6 @@ library(doParallel)
 library(foreach)
 library(mvtnorm)
 library(ContaminatedMixt)
-library(abind)
 # library(distrEllipse)
 
 # setwd("C:\\Users\\Xin\\OneDrive\\research\\change point covariance\\code\\simulation")
@@ -25,8 +24,8 @@ nSim=100
 # b=0.8*n^(-1/5)
 b=0.3
 
-Sigma1=diag(rep(10,d))
-Sigma2=diag(rep(10,d))
+Sigma1=diag(rep(1,d))
+Sigma2=diag(rep(1,d))
 
 
 cp_indx=50#the index of the change point
@@ -41,9 +40,8 @@ alpha=seq(0.01,0.99,length.out=25)#range of probability
 ptm <- proc.time()
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
-# alpha_hat_arr<-foreach(nn=1:nSim, .combine='cbind', .multicombine=TRUE,
-#                        .export=c('bootstrap_gen','bootstrap_fit','T_statistic','mvrnorm'))%dopar%{
-alpha_hat_arr<-foreach(nn=1:nSim,.combine='cbind',.packages=c('MASS'))%dopar%{
+alpha_hat_arr<-foreach(nn=1:nSim,.combine='rbind',
+                       .packages=c('MASS','mvtnorm','ContaminatedMixt'))%dopar%{
   # set.seed(nn)
   #data generation
   X=bootstrap_gen(n,d,cp_indx,family='normal',para=para)
@@ -60,12 +58,12 @@ alpha_hat_arr<-foreach(nn=1:nSim,.combine='cbind',.packages=c('MASS'))%dopar%{
   })
   # sq=quantile(W,probs=alpha)
   T_n=T_statistic(X,b,ncores)
-  as.vector(sapply(1:length(sq),FUN=function(x){
+  array(sapply(1:length(sq),FUN=function(x){
     T_n<=sq[x]
-  }))
+  }),c(1,length(sq)))
 }
 stopCluster(cl)
-t2=proc.time() - ptm
+t=proc.time() - ptm
 # alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
 # alpha_hat=colMeans(alpha_hat_arr)
 # 
