@@ -2,6 +2,7 @@ library(MASS)
 library(compiler)
 library(doParallel)
 library(foreach)
+# library(parallel)
 library(mvtnorm)
 library(ContaminatedMixt)
 # library(distrEllipse)
@@ -37,6 +38,8 @@ bootstrap_gen<-function(n,d,cp_indx,family,para){
 }
 
 
+
+
 # #######################################
 # 2. bootstrap_fit
 # X: data matrix (n by p)
@@ -69,13 +72,22 @@ bootstrap_fit<-function(X,nBoot,b,ncores){
     indx_tmp=sample(1:n,replace=TRUE)
     return(X[indx_tmp,])
   },simplify="array")  
-  tmp=sapply(1:nBoot,FUN=function(step){
-    sapply((hnb+1):(n-hnb),FUN=function(it){
+  # cl <- makeCluster(ncores)
+  # registerDoParallel(cl)
+  tmp<-foreach(step=1:nBoot, .combine='cbind',.multicombine=TRUE,.export=c('dev_Sig_at_t_with_e'))%:%
+    foreach(it=(hnb+1):(n-hnb), .combine='c',.export=c('dev_Sig_at_t_with_e'))%dopar%{
       X_star=X_bootstrap[,,step]
       e=nBoot_e[,step]
-      return(dev_Sig_at_t_with_e(it,X_star,e,b))
-    })
-  },simplify="array")
+      result=dev_Sig_at_t_with_e(it,X_star,e,b)
+    }
+  # stopCluster(cl)
+  # tmp=sapply(1:nBoot,FUN=function(step){
+  #   sapply((hnb+1):(n-hnb),FUN=function(it){
+  #     X_star=X_bootstrap[,,step]
+  #     e=nBoot_e[,step]
+  #     result=dev_Sig_at_t_with_e(it,X_star,e,b)
+  #   })
+  # },simplify="array")
   
   W_all=as.vector(apply(tmp,MARGIN=2,max))
   return(W_all)
@@ -95,9 +107,12 @@ T_statistic<-function(X,b,ncores){
   n=dim(X)[1]
   d=dim(X)[2]
   hnb=round((b*n)/2)#half bandwidth
-  tmp=sapply((hnb+1):(n-hnb),FUN=function(it){
-    return(dev_Sig_at_t_without_e(it,X,b))
-  })
+  # cl <- makeCluster(ncores)
+  # registerDoParallel(cl)
+  tmp<-foreach(it=(hnb+1):(n-hnb), .combine='c',.export=c('dev_Sig_at_t_without_e'))%dopar%{
+    result=dev_Sig_at_t_without_e(it,X,b)
+  }
+  # stopCluster(cl)
   return(max(tmp))
 }
 

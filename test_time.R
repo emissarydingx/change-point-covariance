@@ -11,7 +11,7 @@ library(abind)
 # setwd('/home/xin/OneDrive/Research/change point covariance/code/simulation')
 # setwd("/home/xin/Dropbox/Research/change point covariance/code/simulation")
 setwd("C:\\Users\\Xin\\Dropbox\\Research\\change point covariance\\code\\simulation")
-source("change_point_bootstrap_lib.R")
+source("change_point_bootstrap_lib2.R")
 # -------------------------------------------
 # Simulation setup
 # -------------------------------------------

@@ -4,14 +4,13 @@ library(doParallel)
 library(foreach)
 library(mvtnorm)
 library(ContaminatedMixt)
-library(abind)
 # library(distrEllipse)
 
 # setwd("C:\\Users\\Xin\\OneDrive\\research\\change point covariance\\code\\simulation")
 # setwd('/home/xin/OneDrive/Research/change point covariance/code/simulation')
 # setwd("/home/xin/Dropbox/Research/change point covariance/code/simulation")
 setwd("C:\\Users\\Xin\\Dropbox\\Research\\change point covariance\\code\\simulation")
-source("change_point_bootstrap_lib.R")
+source("change_point_bootstrap_lib_old.R")
 # -------------------------------------------
 # Simulation setup
 # -------------------------------------------
@@ -41,12 +40,11 @@ alpha=seq(0.01,0.99,length.out=25)#range of probability
 ptm <- proc.time()
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
-# alpha_hat_arr<-foreach(nn=1:nSim, .combine='cbind', .multicombine=TRUE,
-#                        .export=c('bootstrap_gen','bootstrap_fit','T_statistic','mvrnorm'))%dopar%{
-alpha_hat_arr<-foreach(nn=1:nSim,.combine='cbind',.packages=c('MASS'))%dopar%{
-  # set.seed(nn)
+for (nn in 1:nSim){
+  print(nn)
+  set.seed(nn)
   #data generation
-  X=bootstrap_gen(n,d,cp_indx,family='normal',para=para)
+  X=bootstrap_gen(n,d,cp_indx,family='t',para=para)
   #bootstrap
   W=bootstrap_fit(X,nBoot,b,ncores)
   W_sort=sort(W)
@@ -60,21 +58,19 @@ alpha_hat_arr<-foreach(nn=1:nSim,.combine='cbind',.packages=c('MASS'))%dopar%{
   })
   # sq=quantile(W,probs=alpha)
   T_n=T_statistic(X,b,ncores)
-  as.vector(sapply(1:length(sq),FUN=function(x){
+  alpha_hat_arr[nn,]=sapply(1:length(sq),FUN=function(x){
     T_n<=sq[x]
-  }))
+  })
 }
 stopCluster(cl)
-t2=proc.time() - ptm
+t=proc.time() - ptm
 # alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
-# alpha_hat=colMeans(alpha_hat_arr)
-# 
-# plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b',xlim=c(0, 1),ylim=c(0,1))
-# abline(a=0,b=1)
+alpha_hat=colMeans(alpha_hat_arr)
+
+plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b',xlim=c(0, 1),ylim=c(0,1))
+abline(a=0,b=1)
 
 # save.image("change_point_detection.Rdata")
-
-
 
 
 
