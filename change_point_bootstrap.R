@@ -17,7 +17,7 @@ source("change_point_bootstrap_lib.R")
 ncores=8
 n=100
 d=40
-nBoot=200
+nBoot=500
 nSim=100
 
 #bandwidth fitting
@@ -64,11 +64,11 @@ alpha_hat_arr<-foreach(nn=1:nSim,.combine='rbind',
 }
 stopCluster(cl)
 t=proc.time() - ptm
-# alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
-# alpha_hat=colMeans(alpha_hat_arr)
-# 
-# plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b',xlim=c(0, 1),ylim=c(0,1))
-# abline(a=0,b=1)
+alpha_hat=as.vector(apply(alpha_hat_arr,MARGIN=2,mean))
+alpha_hat=colMeans(alpha_hat_arr)
+
+plot(alpha,alpha_hat,xlab='alpha',ylab='Bootstrap approximation',type='b',xlim=c(0, 1),ylim=c(0,1))
+abline(a=0,b=1)
 
 # save.image("change_point_detection.Rdata")
 
