@@ -13,12 +13,12 @@ source("change_point_bootstrap_lib.R")
 # Simulation setup
 # -------------------------------------------
 ncores=8
-n=300
-d=50
-nBoot=200
+n=100
+d=20
+nBoot=300
 nSim=100
-s0=10
-family='t'
+s0=5
+family='mix'
 
 filename=paste0('cp_n_',n,'_d_',d,'_nBoot_',nBoot,'_nSim_',nSim,'_s0_',s0,'_family_',family,'.Rdata',collapse = NULL)
 
