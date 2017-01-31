@@ -43,21 +43,21 @@ bootstrap_gen<-function(n,d,cp_indx,family,para){
 # it: it th observation
 # nBoot: a number represents the number of sampling
 # b: bandwidth
-# ncores: cpu number
-dev_Sig_at_t_with_e<-function(it,X_star,e,b){
+
+dev_Sig_at_t_with_e<-function(s,X_star, e){
   n=dim(X_star)[1]
   d=dim(X_star)[2]
-  hnb=round((b*n)/2)#half bandwidth
-  s1=crossprod(X_star[((it-hnb):it),]*drop(e[((it-hnb):it)]),X_star[((it-hnb):it),])
-  s2=crossprod(X_star[((it+1):(it+hnb)),]*drop(e[((it+1):(it+hnb))]),X_star[((it+1):(it+hnb)),])
-  dev=max(abs(s1-s2))/hnb
+  s1=crossprod(X_star[(1:s),]*drop(e[(1:s)]),X_star[(1:s),])-
+    sum(e[1:s])/s*crossprod(X_star[(1:s),],X_star[(1:s),])
+  s2=crossprod(X_star[((s+1):n),]*drop(e[((s+1):n)]),X_star[((s+1):n),])-
+    sum(e[(s+1):n])/(n-s)*crossprod(X_star[((s+1):n),],X_star[((s+1):n),])
+  dev=max(abs(sqrt((n-s)/(n*s))*s1-sqrt(s/(n*(n-s)))*s2))
   return(dev)
 }
 
-bootstrap_fit<-function(X,nBoot,b){
+bootstrap_fit<-function(X,nBoot,s0){
   n=dim(X)[1]
   d=dim(X)[2]
-  hnb=round((b*n)/2)#half bandwidth
   #generate iid e_i: nBoot_e n by nBoot
   # nBoot_e=mvrnorm(n = n, mu=rep(0,nBoot), Sigma=diag(rep(1,nBoot)))
   nBoot_e=sapply(1:nBoot,FUN=function(x){
@@ -70,10 +70,10 @@ bootstrap_fit<-function(X,nBoot,b){
     return(X[indx_tmp,])
   },simplify="array")  
   tmp=sapply(1:nBoot,FUN=function(step){
-    sapply((hnb+1):(n-hnb),FUN=function(it){
+    sapply(s0:(n-s0),FUN=function(s){
       X_star=X_bootstrap[,,step]
       e=nBoot_e[,step]
-      return(dev_Sig_at_t_with_e(it,X_star,e,b))
+      return(dev_Sig_at_t_with_e(s,X_star,e))
     })
   },simplify="array")
   
@@ -81,23 +81,21 @@ bootstrap_fit<-function(X,nBoot,b){
   return(W_all)
 }
 
-dev_Sig_at_t_without_e<-function(it,X,b){
+dev_Sig_at_t_without_e<-function(s,X){
   n=dim(X)[1]
   d=dim(X)[2]
-  hnb=round((b*n)/2)#half bandwidth
-  s1=crossprod(X[((it-hnb):it),],X[((it-hnb):it),])
-  s2=crossprod(X[((it+1):(it+hnb)),],X[((it+1):(it+hnb)),])
-  dev=max(abs(s1-s2))/hnb
+  s1=crossprod(X[1:s,],X[1:s,])
+  s2=crossprod(X[(s+1):n,],X[(s+1):n,])
+  dev=max(abs(sqrt((n-s)/(n*s))*s1-sqrt(s/(n*(n-s)))*s2))
   # dev=norm(s1-s2,type='I')/hnb
   return(dev)
 }
 
-T_statistic<-function(X,b){
+T_statistic<-function(X,s0){
   n=dim(X)[1]
   d=dim(X)[2]
-  hnb=round((b*n)/2)#half bandwidth
-  tmp=sapply((hnb+1):(n-hnb),FUN=function(it){
-    return(dev_Sig_at_t_without_e(it,X,b))
+  tmp=sapply(s0:(n-s0),FUN=function(s){
+    return(dev_Sig_at_t_without_e(s,X))
   })
   return(max(tmp))
 }

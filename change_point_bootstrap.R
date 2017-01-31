@@ -6,21 +6,21 @@ library(mvtnorm)
 library(ContaminatedMixt)
 # library(distrEllipse)
 
-setwd("/home/xin/Dropbox/Research/change point covariance/code/simulation")
-# setwd("C:\\Users\\Xin\\Dropbox\\Research\\change point covariance\\code\\simulation")
+# setwd("/home/xin/Dropbox/Research/change point covariance/code/simulation")
+setwd("C:\\Users\\Xin\\Dropbox\\Research\\change point covariance\\code\\simulation")
 source("change_point_bootstrap_lib.R")
 # -------------------------------------------
 # Simulation setup
 # -------------------------------------------
 ncores=8
-n=100
-d=40
-nBoot=300
-nSim=200
+n=300
+d=50
+nBoot=200
+nSim=100
+s0=10
+family='t'
 
-#bandwidth fitting
-# b=0.8*n^(-1/5)
-b=0.1
+filename=paste0('cp_n_',n,'_d_',d,'_nBoot_',nBoot,'_nSim_',nSim,'_s0_',s0,'_family_',family,'.Rdata',collapse = NULL)
 
 Sigma1=diag(rep(1,d))
 Sigma2=diag(rep(1,d))
@@ -39,7 +39,7 @@ alpha=seq(0.01,0.99,length.out=25)#range of probability
 X_all=array(0,c(n,d,nSim))
 for (nn in 1:nSim){
   set.seed(nn)
-  X_all[,,nn]=bootstrap_gen(n,d,cp_indx,family='normal',para=para)
+  X_all[,,nn]=bootstrap_gen(n,d,cp_indx,family=family,para=para)
 }
 
 
@@ -50,7 +50,7 @@ alpha_hat_arr<-foreach(nn=1:nSim,.combine='rbind',
                        .packages=c('MASS','mvtnorm','ContaminatedMixt'))%dopar%{
   X=X_all[,,nn]
   #bootstrap
-  W=bootstrap_fit(X,nBoot,b)
+  W=bootstrap_fit(X,nBoot,s0)
   W_sort=sort(W)
   #Empirical cdf of W
   ecdf_W=ecdf(W)
@@ -61,7 +61,7 @@ alpha_hat_arr<-foreach(nn=1:nSim,.combine='rbind',
     W_sort[sum(alpha[x]>prob_W_interval)]
   })
   # sq=quantile(W,probs=alpha)
-  T_n=T_statistic(X,b)
+  T_n=T_statistic(X,s0)
   array(sapply(1:length(sq),FUN=function(x){
     T_n<=sq[x]
   }),c(1,length(sq)))
@@ -76,7 +76,7 @@ abline(a=0,b=1)
 
 # save.image("change_point_detection.Rdata")
 
-
+save.image(filename)
 
 
 
